@@ -2,7 +2,7 @@
 name = "ntfs_mft_reader"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Robin Collins <Robin.F.Collins@outlook.com>"]
 description = "A Rust application to read and parse the NTFS Master File Table (MFT) and structure the data for database storage."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
