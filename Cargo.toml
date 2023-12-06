@@ -16,6 +16,8 @@ anyhow = "1.0"
 thiserror = "1.0"
 # Add database client dependency according to the database you choose, for example, for SQLite:
 rusqlite = { version = "0.25", features = ["bundled"] }
+env_logger = "0.9"
+
 
 [lib]
 name = "ntfs_mft_lib"
