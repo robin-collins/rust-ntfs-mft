@@ -5,10 +5,9 @@
 # file with configuration.  For more information, see:
 # https://github.com/actions/labeler
 
+
 name: Labeler
-on:
-  release:
-    types: [published]
+on: [pull_request_target]
 
 jobs:
   label:
