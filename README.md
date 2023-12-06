@@ -49,6 +49,14 @@ Start the server
   npm run start
 ```
 
+## Logging Configuration
+To control the verbosity of log outputs, set the `RUST_LOG` environment variable to the desired log level before running the program. The available log levels are: `error`, `warn`, `info`, `debug`, and `trace`.
+For example, to run the program with `info` level logging, use the following command:
+
+```bash
+  RUST_LOG=info npm run start
+```
+
 ## Future Roadmap
 - AI-driven categorization of files
 - Integration with vector databases for advanced search capabilities
