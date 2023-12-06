@@ -13,6 +13,9 @@ pub struct StructuredData {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DbEntry {
     pub record_number: u64,
+    pub file_name: String,
+    pub file_size: u64,
+    pub creation_time: String,
     // Add more fields as necessary to represent the database entry
     // For example, file name, file size, creation time, etc.
 }
@@ -34,6 +37,9 @@ impl StructuredData {
 
             let db_entry = DbEntry {
                 record_number: entry.record_number,
+                file_name: entry.file_name,
+                file_size: entry.file_size,
+                creation_time: entry.creation_time,
                 // Populate other fields as necessary
             };
 
@@ -57,6 +63,9 @@ mod tests {
             MftEntry {
                 signature: "FILE".to_string(),
                 record_number: 12345,
+                file_name: "test_file".to_string(),
+                file_size: 1024,
+                creation_time: "2022-01-01T00:00:00Z".to_string(),
                 // Initialize other fields as necessary
             },
             // Add more fake MFT entries if needed
@@ -68,6 +77,9 @@ mod tests {
         // Check the structured data
         assert_eq!(structured_data.entries.len(), 1);
         assert_eq!(structured_data.entries[0].record_number, 12345);
+        assert_eq!(structured_data.entries[0].file_name, "test_file");
+        assert_eq!(structured_data.entries[0].file_size, 1024);
+        assert_eq!(structured_data.entries[0].creation_time, "2022-01-01T00:00:00Z");
         // Add more assertions as necessary
     }
 }

@@ -6,7 +6,8 @@ use ntfs_mft_lib::database_interface::DatabaseInterface;
 use anyhow::{Result, Context};
 use log::{info, warn, error};
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     // Initialize the logger
     env_logger::init();
 
@@ -18,18 +19,18 @@ fn main() -> Result<()> {
     let mut mft_reader = MftReader::new(&config).context("Failed to initialize MFT reader")?;
 
     // Initialize the database interface
-    let database_interface = DatabaseInterface::new(&config).context("Failed to initialize database interface")?;
+    let database_interface = DatabaseInterface::new(&config).await.context("Failed to initialize database interface")?;
 
     // Read and parse the MFT entries
     let mut structured_data = StructuredData { entries: Vec::new() };
     let mut entry_index = 0;
 
     // Start a database transaction
-    let transaction = database_interface.start_transaction().context("Failed to start database transaction")?;
+    let mut transaction = database_interface.start_transaction().await.context("Failed to start database transaction")?;
 
     loop {
         // Read an MFT entry
-        match mft_reader.read_mft_entry(entry_index) {
+        match mft_reader.read_mft_entry(entry_index).await {
             Ok(entry_data) => {
                 // Parse the MFT entry
                 match MftEntry::parse(&entry_data) {
@@ -57,10 +58,10 @@ fn main() -> Result<()> {
     }
 
     // Store the structured data in the database
-    transaction.store_data(&structured_data).context("Failed to store data in the database")?;
+    database_interface.store_data(&structured_data, &mut transaction).await.context("Failed to store data in the database")?;
 
     // Commit the transaction
-    transaction.commit().context("Failed to commit database transaction")?;
+    database_interface.commit(&mut transaction).await.context("Failed to commit database transaction")?;
 
     info!("MFT data has been successfully read, parsed, and stored in the database.");
 

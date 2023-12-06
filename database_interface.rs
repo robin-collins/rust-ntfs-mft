@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::data_structurer::StructuredData;
 use anyhow::{Result, Context};
-use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
+use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite, Transaction};
 
 pub struct DatabaseInterface {
     pool: Pool<Sqlite>,
@@ -50,6 +50,30 @@ impl DatabaseInterface {
 
         Ok(())
     }
+
+    pub async fn start_transaction(&self) -> Result<Transaction<Sqlite>, sqlx::Error> {
+        let transaction = self.pool.begin().await?;
+        Ok(transaction)
+    }
+
+    pub async fn store_data(&self, data: &StructuredData, transaction: &mut Transaction<Sqlite>) -> Result<()> {
+        for entry in &data.entries {
+            sqlx::query("INSERT INTO files (record_number, file_name, file_size, creation_time) VALUES (?, ?, ?, ?)")
+                .bind(entry.record_number)
+                .bind(entry.file_name)
+                .bind(entry.file_size)
+                .bind(entry.creation_time)
+                .execute(transaction)
+                .await
+                .context("Failed to insert entry into the database")?;
+        }
+        Ok(())
+    }
+
+    pub async fn commit(&self, transaction: &mut Transaction<Sqlite>) -> Result<()> {
+        transaction.commit().await.context("Failed to commit database transaction")?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -63,21 +87,19 @@ mod tests {
         let config = Config::new()?;
         let db_interface = DatabaseInterface::new(&config).await?;
         db_interface.create_tables().await?;
-
+        let mut transaction = db_interface.start_transaction().await?;
         let structured_data = StructuredData {
             entries: vec![
                 DbEntry {
                     record_number: 12345,
-                    // Initialize other fields as necessary
+                    file_name: "test.txt".to_string(),
+                    file_size: 1024,
+                    creation_time: "2021-01-01T00:00:00Z".to_string(),
                 },
-                // Add more entries if needed
             ],
         };
-
-        db_interface.insert_entries(&structured_data).await?;
-
-        // Add more tests to verify database operations if necessary
-
+        db_interface.store_data(&structured_data, &mut transaction).await?;
+        db_interface.commit(&mut transaction).await?;
         Ok(())
     }
 }
